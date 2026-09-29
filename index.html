@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reverse Engineering Immersive Media Systems</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <p class="eyebrow">Lecture companion</p>
+    <h1>Reverse Engineering Immersive Media Systems</h1>
+    <p class="lede">Before a project becomes hardware, code, or a finished installation, explain how it behaves as a system. Each section pairs the lecture with a picture you can step through.</p>
+  </header>
+
+  <nav class="section-nav" aria-label="Lecture sections">
+    <a href="#meaning" class="is-current" aria-current="true">I Meaning</a>
+    <a href="#system">II System</a>
+    <a href="#pseudo">III Pseudo-code</a>
+    <a href="#flow">IV Flow</a>
+    <a href="#state">V State</a>
+    <a href="#interaction">VI Interaction</a>
+    <a href="#mechanic">VII Mechanic</a>
+    <a href="#risk">VIII Risk</a>
+    <a href="#peer">IX Peer project</a>
+    <a href="#closing">X Closing</a>
+  </nav>
+
+  <main>
+    <section class="lecture-section" id="meaning">
+      <div class="prose">
+        <p class="kicker">I</p>
+        <h2>What do we mean by reverse engineering?</h2>
+        <p>The traditional meaning starts with an object, a system, or a piece of software. You examine how it works, infer the structure, and reconstruct the logic or the implementation.</p>
+        <p>In this class the goal is different. We are not trying to recover the original code or the original hardware. We are trying to make a reasonable model of <strong>how an experience behaves as a system</strong>.</p>
+        <p>That model can describe an existing professional project, a proposal, a classmate’s idea, or your own capstone.</p>
+        <h3>The question to keep asking</h3>
+        <blockquote>If we had to build this experience, what would need to happen for it to work?</blockquote>
+        <p>Immersive projects often depend on parts that are expensive or easy to get wrong:</p>
+        <ul class="chip-list">
+          <li>sensors</li>
+          <li>projection</li>
+          <li>VR</li>
+          <li>motion tracking</li>
+          <li>networking</li>
+          <li>spatial audio</li>
+          <li>fabrication</li>
+          <li>custom software</li>
+        </ul>
+        <p>A problem is much cheaper to find in a diagram than in a finished installation.</p>
+      </div>
+      <div class="demo">
+        <div class="demo-frame">
+          <div class="demo-controls" role="group" aria-label="What the box contains">
+            <button type="button" data-sketch="blackBox" data-action="model" data-press="exclusive" aria-pressed="true">Behavior model</button>
+            <button type="button" data-sketch="blackBox" data-action="code" data-press="exclusive" aria-pressed="false">Original code</button>
+          </div>
+          <div id="sketch-blackbox" class="sketch-host"></div>
+          <p class="demo-status" id="status-blackbox" aria-live="polite">Rules inside the box are a model of the experience, not its source code.</p>
+          <p class="demo-summary">The useful model is a few rules for how the experience behaves, not the original source code.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="lecture-section" id="system">
+      <div class="prose">
+        <p class="kicker">II</p>
+        <h2>Moving from an idea to a system</h2>
+        <p>Start with a vague concept:</p>
+        <blockquote>An interactive projection responds to visitors’ movements and gradually transforms the space.</blockquote>
+        <p>The sentence is a concept. A system has to answer what is missing:</p>
+        <ul>
+          <li>What kind of movement?</li>
+          <li>How is movement detected?</li>
+          <li>What changes, and what causes the transformation?</li>
+          <li>Does it respond to one person or many?</li>
+          <li>What happens when no one is there, or when someone leaves?</li>
+          <li>Does the system reset? Is there a beginning and an end?</li>
+        </ul>
+        <div class="split-notes">
+          <div>
+            <h3>Concept</h3>
+            <ul>
+              <li>What the experience is about</li>
+              <li>What it should feel like</li>
+              <li>What the participant should experience</li>
+            </ul>
+          </div>
+          <div>
+            <h3>System</h3>
+            <ul>
+              <li>What inputs exist</li>
+              <li>What decisions are made</li>
+              <li>What outputs occur</li>
+              <li>What changes over time</li>
+            </ul>
+          </div>
+        </div>
+        <p>Reverse engineering is how we move from idea to system, before prototype and implementation.</p>
+        <ol class="progression">
+          <li>Idea</li>
+          <li class="is-here">System</li>
+          <li>Prototype</li>
+          <li>Implementation</li>
+        </ol>
+      </div>
+      <div class="demo">
+        <div class="demo-frame">
+          <div class="demo-controls" role="group" aria-label="Answers that turn the idea into a system">
+            <button type="button" data-sketch="idea" data-action="one" data-press="toggle" aria-pressed="false">One visitor</button>
+            <button type="button" data-sketch="idea" data-action="many" data-press="toggle" aria-pressed="false">Many visitors</button>
+            <button type="button" data-sketch="idea" data-action="camera" data-press="toggle" aria-pressed="false">Camera detects movement</button>
+            <button type="button" data-sketch="idea" data-action="change" data-press="toggle" aria-pressed="false">Projection transforms</button>
+            <button type="button" data-sketch="idea" data-action="reset" data-press="toggle" aria-pressed="false">Reset when the room is empty</button>
+            <button type="button" data-sketch="idea" data-action="clear">Clear answers</button>
+          </div>
+          <div id="sketch-idea" class="sketch-host"></div>
+          <p class="demo-status" id="status-idea" aria-live="polite">The scene is still a vague idea. Answer a question to add a label.</p>
+          <p class="demo-summary">The same projection scene stays vague until each missing question gets an answer.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="lecture-section" id="pseudo">
+      <div class="prose">
+        <p class="kicker">III</p>
+        <h2>Pseudo-code</h2>
+        <p>Pseudo-code is a plain-language description of system logic. It looks a little like code. It does not need to compile. Syntax does not matter. Logic does.</p>
+        <ul class="word-list" aria-label="Useful words">
+          <li>IF</li>
+          <li>ELSE</li>
+          <li>WHEN</li>
+          <li>WHILE</li>
+          <li>WAIT</li>
+          <li>REPEAT</li>
+          <li>DETECT</li>
+          <li>CHANGE</li>
+          <li>RESET</li>
+        </ul>
+        <p>While you write it, keep asking:</p>
+        <ol>
+          <li>What does the system know?</li>
+          <li>What does the system check?</li>
+          <li>What decisions does it make?</li>
+          <li>What happens as a result?</li>
+          <li>What repeats?</li>
+        </ol>
+        <p>“The participant is interested” cannot be checked. “The participant stays in the area for 20 seconds” can. The same is true of direction: left and right are observable, so the particles can follow them.</p>
+        <blockquote>Turn “something happens” into “WHEN X happens, DO Y.”</blockquote>
+      </div>
+      <div class="demo">
+        <div class="demo-frame">
+          <div class="demo-controls" role="group" aria-label="Pseudo-code examples">
+            <button type="button" data-sketch="pseudo" data-action="room" data-press="exclusive" aria-pressed="true">Run the room</button>
+            <button type="button" data-sketch="pseudo" data-action="observe" data-press="exclusive" aria-pressed="false">Interested or observable</button>
+            <button type="button" data-sketch="pseudo" data-action="direction" data-press="exclusive" aria-pressed="false">Left and right</button>
+          </div>
+          <div class="code-panel" data-panel-group="pseudo" data-panel="room">
+            <ul class="code-lines" id="pseudo-room-lines">
+              <li class="is-active">WAIT for participant</li>
+              <li>WHEN participant enters the space</li>
+              <li class="indent">activate the experience</li>
+              <li>WHILE participant remains in the space</li>
+              <li class="indent">detect movement</li>
+              <li class="indent">change the projected image</li>
+              <li>WHEN participant leaves</li>
+              <li class="indent">reset the system</li>
+            </ul>
+          </div>
+          <div class="demo-controls" data-panel-group="pseudo" data-panel="room">
+            <button type="button" data-sketch="pseudo" data-action="play" aria-pressed="false">Play</button>
+            <button type="button" data-sketch="pseudo" data-action="step">Step</button>
+            <button type="button" data-sketch="pseudo" data-action="reset">Reset</button>
+          </div>
+          <div class="code-panel" data-panel-group="pseudo" data-panel="observe" hidden>
+            <p class="observe-note">IF participant is interested<br>the computer cannot check this.</p>
+            <p class="observe-note">IF participant remains for 20 seconds<br>reveal more content.</p>
+          </div>
+          <div class="code-panel" data-panel-group="pseudo" data-panel="direction" hidden>
+            <ul class="code-lines" id="pseudo-direction-lines">
+              <li>IF participant moves left</li>
+              <li class="indent">move projected particles left</li>
+              <li>IF participant moves right</li>
+              <li class="indent">move projected particles right</li>
+            </ul>
+          </div>
+          <div class="demo-controls" data-panel-group="pseudo" data-panel="direction" hidden>
+            <button type="button" data-sketch="pseudo" data-action="left" aria-pressed="false">Move left</button>
+            <button type="button" data-sketch="pseudo" data-action="right" aria-pressed="false">Move right</button>
+          </div>
+          <div id="sketch-pseudo" class="sketch-host"></div>
+          <p class="demo-status" id="status-pseudo" aria-live="polite">Press Play to run the example. The highlighted line is the current step.</p>
+          <p class="demo-summary">Plain-language rules can run: the active line is what the room is doing now.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="lecture-section" id="flow">
+      <div class="prose">
+        <p class="kicker">IV</p>
+        <h2>Flow charts</h2>
+        <p>A flow chart maps how information moves through a system.</p>
+        <blockquote>Input, then process, then output.</blockquote>
+        <h3>Inputs</h3>
+        <p>Camera, microphone, controller, keyboard, motion or proximity sensor, participant position, audio level, a network message, or time.</p>
+        <h3>Processes</h3>
+        <p>Detect, measure, calculate, compare, classify, transform, generate, store, or randomize.</p>
+        <h3>Outputs</h3>
+        <p>Projection, image, sound, lighting, animation, physical movement, haptic feedback, or a network message.</p>
+        <p>The diagram shows dependencies, technical complexity, bottlenecks, and the places where systems connect. Those are often the risky parts.</p>
+        <blockquote>What enters the system, what happens to it, and what comes out?</blockquote>
+      </div>
+      <div class="demo">
+        <div class="demo-frame">
+          <div class="demo-controls" role="group" aria-label="Flow chart views">
+            <button type="button" data-sketch="flow" data-action="simple" data-press="exclusive" aria-pressed="true">Input, process, output</button>
+            <button type="button" data-sketch="flow" data-action="install" data-press="exclusive" aria-pressed="false">Installation diagram</button>
+          </div>
+          <div id="sketch-flow" class="sketch-host"></div>
+          <p class="demo-status" id="status-flow" aria-live="polite">A token carries one example from an input, through a process, to an output.</p>
+          <p class="demo-summary">Information moves from inputs through processes to outputs. Body tracking is where this installation can get stuck.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="lecture-section" id="state">
+      <div class="prose">
+        <p class="kicker">V</p>
+        <h2>State diagrams</h2>
+        <p>A <strong>state</strong> is a condition the system can remain in for a while: idle, active, waiting, calibration, interaction, success, failure, or reset.</p>
+        <div class="split-notes">
+          <div>
+            <h3>Flow chart</h3>
+            <p>Where does information go?</p>
+          </div>
+          <div>
+            <h3>State diagram</h3>
+            <p>What is the system doing right now?</p>
+          </div>
+        </div>
+        <p>The boxes are states. The arrows are events that cause change: someone enters, a timer expires, an object is selected, a score is reached, a threshold is crossed, someone leaves.</p>
+        <p>Participants do unpredictable things. They enter halfway through, leave early, press something over and over, skip the instructions, act at the same time, or do nothing. The diagram has to say what happens anyway.</p>
+        <blockquote>What can the system be doing, and what causes it to change?</blockquote>
+      </div>
+      <div class="demo">
+        <div class="demo-frame">
+          <div class="demo-controls" role="group" aria-label="Events">
+            <button type="button" data-sketch="state" data-action="enter">Enter</button>
+            <button type="button" data-sketch="state" data-action="approach">Approach</button>
+            <button type="button" data-sketch="state" data-action="finish">Finish the interaction</button>
+            <button type="button" data-sketch="state" data-action="leave">Leave</button>
+            <button type="button" data-sketch="state" data-action="nothing">Do nothing</button>
+            <button type="button" data-sketch="state" data-action="walkaway">Walk away during active</button>
+          </div>
+          <div id="sketch-state" class="sketch-host"></div>
+          <p class="demo-status" id="status-state" aria-live="polite">State: IDLE. The room is empty and waiting.</p>
+          <p class="demo-summary">The system stays in one state until an event, such as someone leaving, moves it to the next.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="lecture-section" id="interaction">
+      <div class="prose">
+        <p class="kicker">VI</p>
+        <h2>Interaction diagrams</h2>
+        <p>Pseudo-code, flow charts, and state diagrams describe the system. An interaction diagram describes the relationship between the participant and the system.</p>
+        <blockquote>Participant ↔ system</blockquote>
+        <p>The participant acts. The system responds. The participant perceives that response and acts again.</p>
+        <ol class="progression">
+          <li>Action</li>
+          <li>Response</li>
+          <li>Perception</li>
+          <li>New action</li>
+        </ol>
+        <blockquote>What does the participant do, and what does the system do back?</blockquote>
+      </div>
+      <div class="demo">
+        <div class="demo-frame">
+          <div class="demo-controls" role="group" aria-label="Interaction playback">
+            <button type="button" data-sketch="interaction" data-action="step">Step</button>
+            <button type="button" data-sketch="interaction" data-action="play" aria-pressed="false">Play</button>
+            <button type="button" data-sketch="interaction" data-action="reset">Reset</button>
+          </div>
+          <div id="sketch-interaction" class="sketch-host"></div>
+          <ol class="progression loop-row" aria-label="Feedback loop">
+            <li data-loop="0" class="is-here">Action</li>
+            <li data-loop="1">Response</li>
+            <li data-loop="2">Perception</li>
+            <li data-loop="3">New action</li>
+          </ol>
+          <p class="demo-status" id="status-interaction" aria-live="polite">Action: the participant enters the room. You can also drag across the canvas.</p>
+          <p class="demo-summary">The participant acts, the system responds, the participant notices, and that leads to the next action.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="lecture-section" id="mechanic">
+      <div class="prose">
+        <p class="kicker">VII</p>
+        <h2>Core mechanics</h2>
+        <p>A core mechanic is a fundamental <strong>action-response relationship</strong> that makes the experience work.</p>
+        <ul>
+          <li>Participant moves, and a virtual object moves.</li>
+          <li>Participant speaks, and the environment changes.</li>
+          <li>Participant approaches, and the sound gets louder.</li>
+          <li>Two people cooperate, and hidden content appears.</li>
+          <li>A player selects an object, and information is revealed.</li>
+        </ul>
+        <p>A finished project might include projection mapping, motion capture, shaders, spatial audio, AI, custom controllers, networking, and fabricated objects. The mechanic underneath can still be simple: moving your body changes the position of something on screen.</p>
+        <p>That is what to prototype first. The prototype does not need the final technology. It only needs to test the important interaction.</p>
+        <blockquote>Body tracking → Unity → projection<br>can be tested as<br>mouse → Unity cube.</blockquote>
+      </div>
+      <div class="demo">
+        <div class="demo-frame">
+          <div class="demo-controls" role="group" aria-label="Which version to show">
+            <button type="button" data-sketch="mechanic" data-action="finished" data-press="exclusive" aria-pressed="true">Finished system</button>
+            <button type="button" data-sketch="mechanic" data-action="prototype" data-press="exclusive" aria-pressed="false">Prototype</button>
+          </div>
+          <div class="slider-row">
+            <label for="mechanic-pos">Position</label>
+            <input id="mechanic-pos" type="range" min="0" max="100" value="20">
+          </div>
+          <div id="sketch-mechanic" class="sketch-host"></div>
+          <p class="demo-status" id="status-mechanic" aria-live="polite">Finished version: body tracking, a game engine, then projection. The motion is the same.</p>
+          <p class="demo-summary">A mouse moving a cube can test the same relationship as full body tracking and projection.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="lecture-section" id="risk">
+      <div class="prose">
+        <p class="kicker">VIII</p>
+        <h2>Reverse engineering as risk reduction</h2>
+        <p>The diagrams are a way to see trouble before a build starts. Four kinds of risk show up in the same system:</p>
+        <ul>
+          <li><strong>Technical.</strong> Can we make the technology work?</li>
+          <li><strong>Interaction.</strong> Will participants understand what to do?</li>
+          <li><strong>Experience.</strong> Is the interaction actually interesting?</li>
+          <li><strong>Production.</strong> Can we build this within our time and resources?</li>
+        </ul>
+        <p>Reverse engineering helps expose each of these before major implementation begins.</p>
+      </div>
+      <div class="demo">
+        <div class="demo-frame">
+          <div class="demo-controls" role="group" aria-label="Risk lenses">
+            <button type="button" data-sketch="risk" data-action="technical" data-press="toggle" aria-pressed="false">Technical</button>
+            <button type="button" data-sketch="risk" data-action="interaction" data-press="toggle" aria-pressed="false">Interaction</button>
+            <button type="button" data-sketch="risk" data-action="experience" data-press="toggle" aria-pressed="false">Experience</button>
+            <button type="button" data-sketch="risk" data-action="production" data-press="toggle" aria-pressed="false">Production</button>
+          </div>
+          <div id="sketch-risk" class="sketch-host"></div>
+          <p class="demo-status" id="status-risk" aria-live="polite">Choose a risk to see which part of the system it asks about.</p>
+          <p class="demo-summary">Each risk looks at a different part of the same system: technology, understanding, interest, or time and resources.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="lecture-section" id="peer">
+      <div class="prose">
+        <p class="kicker">IX</p>
+        <h2>Applying the method to a peer project</h2>
+        <p>On Wednesday, you will take another student’s project idea and model it as a system.</p>
+        <p>You are not being asked to redesign it. You are trying to answer one question:</p>
+        <blockquote>How would this project need to work?</blockquote>
+        <p>Work from the idea as it was described. Where the description is still open, write down the assumption instead of inventing a new project.</p>
+      </div>
+      <div class="deliverables">
+        <article>
+          <h3>1. Pseudo-code</h3>
+          <p>What rules govern the system?</p>
+        </article>
+        <article>
+          <h3>2. Flow chart</h3>
+          <p>What are the inputs, processes, and outputs?</p>
+        </article>
+        <article>
+          <h3>3. State diagram</h3>
+          <p>How does the system change over time?</p>
+        </article>
+        <article>
+          <h3>4. Core mechanic</h3>
+          <p>What is the smallest important interaction worth prototyping?</p>
+        </article>
+        <article>
+          <h3>5. Assumptions</h3>
+          <p>What did your group have to assume because the idea was not yet fully specified?</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="lecture-section" id="closing">
+      <div class="prose">
+        <p class="kicker">X</p>
+        <h2>Closing principle</h2>
+        <blockquote>Before you build it, can you explain how it works?</blockquote>
+        <ul class="question-list">
+          <li><strong>Pseudo-code.</strong> What are the rules?</li>
+          <li><strong>Flow.</strong> Where does the information go?</li>
+          <li><strong>State.</strong> How does the system change?</li>
+          <li><strong>Interaction.</strong> What happens between participant and system?</li>
+          <li><strong>Core mechanic.</strong> What is the smallest thing we need to test?</li>
+        </ul>
+        <ol class="progression">
+          <li>Reverse engineer</li>
+          <li>Prototype</li>
+          <li>Learn</li>
+          <li>Build</li>
+        </ol>
+      </div>
+      <div class="demo">
+        <div class="demo-frame">
+          <div class="demo-controls" role="group" aria-label="Recap playback">
+            <button type="button" data-sketch="recap" data-action="replay">Replay</button>
+          </div>
+          <div id="sketch-recap" class="sketch-host"></div>
+          <p class="demo-status" id="status-recap" aria-live="polite">Pseudo-code: What are the rules?</p>
+          <p class="demo-summary">One pass through the five questions is the explanation you want before anyone builds the project.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Reverse engineer, then prototype, then learn, then build.</p>
+  </footer>
+
+  <script src="js/vendor/p5.min.js"></script>
+  <script src="js/sketches/common.js"></script>
+  <script src="js/sketches/blackBox.js"></script>
+  <script src="js/sketches/ideaToSystem.js"></script>
+  <script src="js/sketches/pseudoCode.js"></script>
+  <script src="js/sketches/flowChart.js"></script>
+  <script src="js/sketches/stateMachine.js"></script>
+  <script src="js/sketches/interaction.js"></script>
+  <script src="js/sketches/coreMechanic.js"></script>
+  <script src="js/sketches/risks.js"></script>
+  <script src="js/sketches/recap.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
